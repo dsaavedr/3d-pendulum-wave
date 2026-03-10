@@ -7,12 +7,12 @@ import { OrbitControls } from "three/examples/jsm/Addons.js";
  */
 const parameters = {
   ambientLightIntensity: 0.9,
-  ambientLightColor: 0xffffff,
+  ambientLightColor: 0xe3e3e3,
   directionalLightIntensity: 1.3,
   directionalLightColor: 0xffffff,
   ballMetalness: 0.1,
   ballRoughness: 0.3,
-  ballColor: 0xff7575,
+  ballColor: 0xdf8af0,
   ballRadius: 0.05,
   ballCount: 75,
   ballSeparation: 0.01,
