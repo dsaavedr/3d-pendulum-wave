@@ -21,6 +21,7 @@ const parameters = {
 };
 
 const gui = new GUI({ width: 340 });
+gui.close();
 const lightsFolder = gui.addFolder("Lights");
 const ambientLightFolder = lightsFolder.addFolder("Ambient");
 const directionalLightFolder = lightsFolder.addFolder("Directional");
