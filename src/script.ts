@@ -1,30 +1,40 @@
 import GUI from "lil-gui";
 import * as three from "three";
-import { OrbitControls } from "three/examples/jsm/Addons.js";
+import { OrbitControls, RectAreaLightUniformsLib } from "three/examples/jsm/Addons.js";
 
 /**
  * Debug
  */
 const parameters = {
-  ambientLightIntensity: 0.9,
+  ambientLightIntensity: 0.5,
   ambientLightColor: 0xe3e3e3,
   directionalLightIntensity: 1.3,
   directionalLightColor: 0xffffff,
   ballMetalness: 0.1,
   ballRoughness: 0.3,
   ballColor: 0xdf8af0,
-  ballRadius: 0.05,
+  ballRadius: 0.15,
   ballCount: 75,
-  ballSeparation: 0.01,
-  amplitude: 2,
-  speedFalloff: 4
+  ballSeparation: 0,
+  amplitude: 4,
+  speedFalloff: 4,
+  redLightColor: "#ff4800",
+  blueLightColor: "#0099ff",
+  greenLightColor: "#30f000",
+  rectLightIntensity: 12,
+  rectLightWidth: 10,
+  rectLightHeight: 20,
+  rectLightDistance: 15,
+  lightsVisible: false,
+  doubleSide: false,
+  rotateLights: true
 };
 
 const gui = new GUI({ width: 340 });
 gui.close();
 const lightsFolder = gui.addFolder("Lights");
 const ambientLightFolder = lightsFolder.addFolder("Ambient");
-const directionalLightFolder = lightsFolder.addFolder("Directional");
+// const directionalLightFolder = lightsFolder.addFolder("Directional");
 const ballsFolder = gui.addFolder("Objects");
 const animationFolder = gui.addFolder("Animation");
 
@@ -85,7 +95,7 @@ ambientLightFolder
     ambientLight.intensity = v;
   });
 
-// Directional
+/* // Directional
 const directionalLight = new three.DirectionalLight(
   parameters.directionalLightColor,
   parameters.directionalLightIntensity
@@ -107,7 +117,151 @@ directionalLightFolder
   .name("intensity")
   .onChange((v: number) => {
     directionalLight.intensity = v;
+  }); */
+
+// Rect area
+RectAreaLightUniformsLib.init();
+const position = new three.Vector3(parameters.rectLightDistance, 0, 0);
+
+const rectAreaLightRed = new three.RectAreaLight(
+  parameters.redLightColor,
+  parameters.rectLightIntensity,
+  parameters.rectLightWidth,
+  parameters.rectLightHeight
+);
+rectAreaLightRed.position.z = position.z;
+rectAreaLightRed.position.x = position.x;
+rectAreaLightRed.lookAt(0, 0, 0);
+
+const rectMeshRed = new three.Mesh(
+  new three.PlaneGeometry(parameters.rectLightWidth, parameters.rectLightHeight),
+  new three.MeshBasicMaterial({
+    visible: parameters.lightsVisible,
+    side: parameters.doubleSide ? three.DoubleSide : three.FrontSide,
+    color: parameters.redLightColor
+  })
+);
+rectMeshRed.position.z = position.z;
+rectMeshRed.position.x = position.x;
+rectMeshRed.lookAt(0, 0, 0);
+
+scene.add(rectAreaLightRed);
+scene.add(rectMeshRed);
+
+position
+  .set(Math.cos((Math.PI * 2) / 3), 0, Math.sin((Math.PI * 2) / 3))
+  .setLength(parameters.rectLightDistance);
+
+const rectAreaLightBlue = new three.RectAreaLight(
+  parameters.blueLightColor,
+  parameters.rectLightIntensity,
+  parameters.rectLightWidth,
+  parameters.rectLightHeight
+);
+rectAreaLightBlue.position.z = position.z;
+rectAreaLightBlue.position.x = position.x;
+rectAreaLightBlue.lookAt(0, 0, 0);
+
+const rectMeshBlue = new three.Mesh(
+  new three.PlaneGeometry(parameters.rectLightWidth, parameters.rectLightHeight),
+  new three.MeshBasicMaterial({
+    visible: parameters.lightsVisible,
+    side: parameters.doubleSide ? three.DoubleSide : three.FrontSide,
+    color: parameters.blueLightColor
+  })
+);
+rectMeshBlue.position.z = position.z;
+rectMeshBlue.position.x = position.x;
+rectMeshBlue.lookAt(0, 0, 0);
+
+scene.add(rectAreaLightBlue);
+scene.add(rectMeshBlue);
+
+position
+  .set(Math.cos((Math.PI * 4) / 3), 0, Math.sin((Math.PI * 4) / 3))
+  .setLength(parameters.rectLightDistance);
+
+const rectAreaLightWhite = new three.RectAreaLight(
+  parameters.greenLightColor,
+  parameters.rectLightIntensity,
+  parameters.rectLightWidth,
+  parameters.rectLightHeight
+);
+rectAreaLightWhite.position.z = position.z;
+rectAreaLightWhite.position.x = position.x;
+rectAreaLightWhite.lookAt(0, 0, 0);
+
+const rectMeshWhite = new three.Mesh(
+  new three.PlaneGeometry(parameters.rectLightWidth, parameters.rectLightHeight),
+  new three.MeshBasicMaterial({
+    visible: parameters.lightsVisible,
+    side: parameters.doubleSide ? three.DoubleSide : three.FrontSide,
+    color: parameters.greenLightColor
+  })
+);
+rectMeshWhite.position.z = position.z;
+rectMeshWhite.position.x = position.x;
+rectMeshWhite.lookAt(0, 0, 0);
+
+scene.add(rectAreaLightWhite);
+scene.add(rectMeshWhite);
+
+const updateLights = [rectAreaLightRed, rectAreaLightBlue, rectAreaLightWhite];
+
+const updateMeshes = [rectMeshBlue, rectMeshRed, rectMeshWhite];
+
+const updateElements = [...updateLights, ...updateMeshes];
+
+lightsFolder
+  .add(parameters, "rectLightDistance")
+  .min(0.001)
+  .max(20)
+  .step(0.001)
+  .onChange((v: number) => {
+    updateElements.forEach(element => {
+      element.position.setLength(v);
+    });
   });
+
+lightsFolder
+  .add(parameters, "rectLightIntensity")
+  .min(0)
+  .max(50)
+  .step(0.001)
+  .onChange((v: number) => {
+    updateLights.forEach(light => {
+      light.intensity = v;
+    });
+  });
+
+lightsFolder.addColor(parameters, "redLightColor").onChange((v: string) => {
+  rectAreaLightRed.color.set(v);
+  rectMeshRed.material.color.set(v);
+});
+
+lightsFolder.addColor(parameters, "blueLightColor").onChange((v: string) => {
+  rectAreaLightBlue.color.set(v);
+  rectMeshBlue.material.color.set(v);
+});
+
+lightsFolder.addColor(parameters, "greenLightColor").onChange((v: string) => {
+  rectAreaLightWhite.color.set(v);
+  rectMeshWhite.material.color.set(v);
+});
+
+lightsFolder.add(parameters, "lightsVisible").onChange((v: boolean) => {
+  updateMeshes.forEach(mesh => {
+    mesh.material.visible = v;
+  });
+});
+
+lightsFolder.add(parameters, "doubleSide").onChange((v: boolean) => {
+  updateMeshes.forEach(mesh => {
+    mesh.material.side = v ? three.DoubleSide : three.FrontSide;
+  });
+});
+
+lightsFolder.add(parameters, "rotateLights");
 
 /**
  * Objects
@@ -217,7 +371,7 @@ ballsFolder
  */
 // Base camera
 const camera = new three.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100);
-camera.position.set(0, 3, 7);
+camera.position.set(0, 0, 20);
 scene.add(camera);
 
 // Controls
@@ -234,18 +388,31 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 /**
  * Animation
  */
-const ani = (time: number) => {
+const timer = new three.Timer();
+timer.connect(document);
+
+const ani = () => {
+  timer.update();
+  const elapsed = timer.getElapsed();
+  const delta = timer.getDelta();
+
   // Update objects
   balls.forEach((ball, idx) => {
     ball.position.x =
-      Math.cos(time * 0.0001 * (idx / parameters.speedFalloff + 1)) * parameters.amplitude;
+      Math.cos(elapsed * 0.1 * (idx / parameters.speedFalloff + 1)) * parameters.amplitude;
     ball.position.z =
-      Math.sin(time * 0.0001 * (idx / parameters.speedFalloff + 1)) * parameters.amplitude;
+      Math.sin(elapsed * 0.1 * (idx / parameters.speedFalloff + 1)) * parameters.amplitude;
   });
 
-  directionalLight.position.x = Math.cos(time * 0.0005) * 5;
-  directionalLight.position.z = Math.sin(time * 0.0005) * 5;
+  // directionalLight.position.x = Math.cos(elapsed * 0.0005) * 5;
+  // directionalLight.position.z = Math.sin(elapsed * 0.0005) * 5;
 
+  if (parameters.rotateLights) {
+    updateElements.forEach(element => {
+      element.position.applyAxisAngle(new three.Vector3(0, 1, 0), delta * 0.5);
+      element.lookAt(0, 0, 0);
+    });
+  }
   // Update controls
   controls.update();
 
